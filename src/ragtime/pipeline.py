@@ -1,7 +1,12 @@
 from ragtime.llms import LLM, LiteLLM
 from ragtime.prompters.prompter import Prompter
 from ragtime.retrievers.retriever import Retriever
-from ragtime.generators import AnsGenerator, FactGenerator, EvalGenerator
+from ragtime.generators import (
+    AnsGenerator,
+    FactGenerator,
+    EvalGenerator,
+    QuestionGenerator,
+)
 from ragtime.expe import StartFrom
 
 from ragtime.base import RagtimeException
@@ -10,6 +15,7 @@ from ragtime.config import (
     FOLDER_ANSWERS,
     FOLDER_FACTS,
     FOLDER_EVALS,
+    FOLDER_QUESTIONS,
     DEFAULT_HTML_TEMPLATE,
     DEFAULT_SPREADSHEET_TEMPLATE,
 )
@@ -49,20 +55,38 @@ def run_pipeline(
     #       to split the error handling from the config file and the implementation details
     #       of the pipeline implementation
     generator_table: dict[str, dict] = {
+        "questions": {
+            "generator": (
+                lambda llms, retriever, num_quest, docs_path: QuestionGenerator(
+                    num_quest=num_quest,  # Set the desired number of questions
+                    docs_path=docs_path,
+                    llms=llms,
+                ).generate
+            ),
+            "default_output_folder": FOLDER_QUESTIONS,
+        },
         "answers": {
             "generator": (
-                lambda llms, retriever: AnsGenerator(
+                lambda llms, retriever, num_quest, docs_path: AnsGenerator(
                     llms=llms, retriever=retriever
                 ).generate
             ),
             "default_output_folder": FOLDER_ANSWERS,
         },
         "facts": {
-            "generator": (lambda llms, retriever: FactGenerator(llms=llms).generate),
+            "generator": (
+                lambda llms, retriever, num_quest, docs_path: FactGenerator(
+                    llms=llms
+                ).generate
+            ),
             "default_output_folder": FOLDER_FACTS,
         },
         "evals": {
-            "generator": (lambda llms, retriever: EvalGenerator(llms=llms).generate),
+            "generator": (
+                lambda llms, retriever, num_quest, docs_path: EvalGenerator(
+                    llms=llms
+                ).generate
+            ),
             "default_output_folder": FOLDER_EVALS,
         },
     }
@@ -72,7 +96,7 @@ def run_pipeline(
     if not configuration.get("generate", None):
         raise Exception("The pipeline must provide a generator suite")
 
-    steps: list[str] = ["answers", "facts", "evals"]
+    steps: list[str] = ["questions", "answers", "facts", "evals"]
     b = steps.index(start_from if start_from in steps else steps[0])
     e = steps.index(stop_after if stop_after in steps else steps[-1], b) + 1
 
@@ -105,12 +129,19 @@ def run_pipeline(
         # The Retriever should be closer the the AnswerGenerator
         # TODO: find an elegant way to present this relation
         retriever: Retriever = None
+        num_quest: int = None
+        docs_path: Path = None
+        if step == "questions":
+            num_quest = step_conf.get("num_quest", 10)
+            docs_path = step_conf.get("docs_path", None)
         if step == "answers":
-            retriever = configuration.get("retriever", None)
-
+            retriever = step_conf.get("retriever", None)
         # Instanciate the Exporter and start the generation
-        expe: Expe = Expe(json_path=input_folder / file_name)
-        generator["generator"](llms, retriever)(
+        if step == "questions":
+            expe: Expe = Expe()
+        else:
+            expe: Expe = Expe(json_path=input_folder / file_name)
+        generator["generator"](llms, retriever, num_quest, docs_path)(
             expe,
             only_llms=step_conf.get("only_llms", None),
             save_every=step_conf.get("save_every", 0),
