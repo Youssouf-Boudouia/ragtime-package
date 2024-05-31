@@ -1,9 +1,7 @@
 from pydantic import BaseModel
-from typing import Optional, Generic, Any, TypeVar
+from typing import Optional, Generic, Any, TypeVar, Callable, Dict, Optional
+from requests import Response, get, post, put, delete
 import inspect
-from typing import Callable, Dict, Optional
-import requests
-from requests import Response
 
 
 class RagtimeBase(BaseModel):
@@ -41,6 +39,7 @@ class RagtimeList(RagtimeBase, Generic[T]):
     def empty(self):
         self.items = []
 
+
 class RagtimeException(Exception):
     pass
 
@@ -63,10 +62,10 @@ REQ_PUT = "put"
 REQ_DELETE = "delete"
 
 _req_type_func: Dict[str, Callable] = {
-    REQ_GET: requests.get,
-    REQ_POST: requests.post,
-    REQ_PUT: requests.put,
-    REQ_DELETE: requests.delete,
+    REQ_GET: get,
+    REQ_POST: post,
+    REQ_PUT: put,
+    REQ_DELETE: delete,
 }
 
 

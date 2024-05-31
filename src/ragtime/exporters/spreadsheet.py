@@ -1,4 +1,4 @@
-from ragtime.base.exporter import Exporter, Expe, Path
+from ragtime.exporters.exporter import Exporter, Expe, Path
 
 
 from ragtime.config import (
@@ -8,7 +8,7 @@ from ragtime.config import (
     RagtimeException,
 )
 
-from ragtime.base.data_type import QA
+from ragtime.expe import QA
 
 from openpyxl import load_workbook, Workbook
 from openpyxl.worksheet.worksheet import Worksheet

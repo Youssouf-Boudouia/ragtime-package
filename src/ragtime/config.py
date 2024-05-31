@@ -1,6 +1,4 @@
-from enum import IntEnum
 from typing import Literal
-import ragtime
 import logging
 import logging.config
 from pathlib import Path
@@ -22,8 +20,8 @@ QUESTIONS_FOLDER_NAME: str = "01. Questions"
 ANSWERS_FOLDER_NAME: str = "02. Answers"
 FACTS_FOLDER_NAME: str = "03. Facts"
 EVALS_FOLDER_NAME: str = "04. Evals"
-DATASETS_FOLDER_NAME : str = "datasets"
-DOCUMENTS_FOLDER_NAME : str = "documents"
+DATASETS_FOLDER_NAME: str = "datasets"
+DOCUMENTS_FOLDER_NAME: str = "documents"
 ROOT_FOLDER: Path = ROOT_FOLDER if "ROOT_FOLDER" in globals() else None
 FOLDER_EXPE: Path = FOLDER_EXPE if "FOLDER_EXPE" in globals() else None
 FOLDER_QUESTIONS: Path = FOLDER_QUESTIONS if "FOLDER_QUESTIONS" in globals() else None
@@ -178,6 +176,7 @@ def init(root_folder: Path):
     logger = RagtimeLogger(logging.getLogger("ragtime_logger"), extra=None)
     # below is simply a hack to turn off unexpected LiteLLM logging with Ragtime logging set to INFO or DEBUG
     logging.getLogger().setLevel(logging.WARNING)
+
 
 def init_project(
     name: str,

@@ -1,6 +1,6 @@
 from ragtime.prompters.prompter import Prompter
-import random
 from ragtime.expe import QA, Prompt, Question
+import random
 import re
 
 
@@ -19,8 +19,11 @@ class QuestionPrompterFR(Prompter):
         """
         Processes the answer returned by the LLM to return a list of questions
         """
-        temp_list = [t.strip() for t in re.split(
-            r'\n\n+|\n', cur_obj.llm_answer.text) if t.strip()]
+        temp_list = [
+            t.strip()
+            for t in re.split(r"\n\n+|\n", cur_obj.llm_answer.text)
+            if t.strip()
+        ]
 
         random.shuffle(temp_list)
         cur_obj.text = temp_list[0]

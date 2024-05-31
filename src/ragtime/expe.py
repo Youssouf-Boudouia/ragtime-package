@@ -2,7 +2,6 @@ from ragtime.base import (
     RagtimeBase,
     RagtimeText,
     RagtimeList,
-    RagtimeException,
 )
 
 from ragtime.config import (
@@ -30,7 +29,7 @@ import json
 
 from enum import Enum, IntEnum
 from datetime import datetime
-from typing import Any, Generic, Optional, TypeVar, Union
+from typing import Any, Optional, Union
 from enum import IntEnum
 
 
@@ -211,94 +210,6 @@ class Expe(RagtimeList[QA]):
             [a for qa in self for a in qa.answers if a.eval and a.eval.auto]
         )
         return res
-
-    def get_name(self) -> str:
-        """Returns the name of the Expe based on the number of questions, answers..."""
-        date_to_time_format: str = "%Y-%m-%d_%Hh%M,%S"
-        stats: dict = self.stats()
-        name: str = (
-            f'{stats["questions"]}Q_{stats["chunks"]}C_{stats["facts"]}F_{stats["models"]}M_{stats["answers"]}A_{stats["human eval"]}HE_{stats["auto eval"]}AE_{datetime.now().strftime(date_to_time_format)}'
-        )
-        return name
-
-    def _file_check_before_writing(
-        self,
-        path: Path = None,
-        b_overwrite: bool = False,
-        b_add_suffix: bool = True,
-        force_ext: str = None,
-    ) -> Path:
-        if path and path.is_dir():
-            if self.json_path:
-                path = path / self.json_path.stem
-            else:
-                raise RagtimeException(
-                    "No JSON file attached to this Expe and you provided only a folder Path"
-                )
-        if not path:
-            if self.json_path:
-                path = Path(self.json_path.parent) / self.json_path.stem
-            else:
-                raise RagtimeException(
-                    f"Cannot save to JSON since no json_path is stored in expe and not path has been provided in argument."
-                )
-
-        # Make sure at least 1 QA is here
-        if len(self) == 0:
-            raise Exception(
-                "The Expe object you're trying to write is empty! Please add at least one QA"
-            )
-
-        # Check and prepare the destination file path
-        if not (path):
-            raise Exception(
-                "No file defined - please specify a file name to save the Expe into"
-            )
-
-        # If the provided path is a string, convert it to a Path
-        result_path = Path(path) if isinstance(path, str) else path
-
-        # If a suffix is to be added, add it
-        if b_add_suffix:
-            file_no_ext: str = result_path.stem
-            # genrates the new suffix like --5M_50Q_141F_50A_38HE
-            sep: str = "--"
-            new_suf: str = self.get_name()
-            if file_no_ext.find(sep) != -1:  # if already a suffix, replace it
-                old_suf: str = file_no_ext[file_no_ext.find(sep) + len(sep) :]
-                file_no_ext = file_no_ext.replace(old_suf, new_suf)
-            else:
-                file_no_ext = f"{file_no_ext}{sep}{new_suf}"
-            str_name: str = f"{file_no_ext}{result_path.suffix}"
-            result_path = result_path.parent / Path(str_name)
-
-        # Force ext
-        if force_ext:
-            if result_path.suffix:  # if already an extension, replace it
-                result_path = Path(
-                    str(result_path).replace(result_path.suffix, force_ext)
-                )
-            else:  # if no extension, just add it
-                result_path = Path(f"{result_path}{force_ext}")
-
-        # If path exists and overwrite not allowed, raise an Exception
-        if result_path.is_file() and not b_overwrite:
-            raise FileExistsError(
-                f'"{path}" already exists! Set b_overwrite=True to allow overwriting.'
-            )
-
-        return result_path
-
-    def load_from_json(self, path: Path):
-        with open(path, mode="r", encoding="utf-8") as file:
-            data: list = json.load(file)
-            qa_list: dict = data
-            if "meta" in data:
-                self.meta = data["meta"]
-                qa_list = data["items"]
-            for json_qa in qa_list:
-                qa: QA = QA(**json_qa)
-                self.append(qa)
 
     def filter_answer(self, llm_facts_name: str):
         """

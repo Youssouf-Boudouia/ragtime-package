@@ -1,4 +1,4 @@
-from ragtime.base.exporter import Exporter, Expe, Path
+from ragtime.exporters.exporter import Exporter, Expe, Path
 
 
 class Json(Exporter):

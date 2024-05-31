@@ -1,11 +1,10 @@
-from ragtime.prompters.prompter import Prompter, Prompt
 from ragtime.prompters.answer_prompters import (
     AnsPrompterBase,
     AnsPrompterWithRetrieverFR,
 )
-from ragtime.prompters.fact_prompters import FactPrompterFR, Facts, Fact
-from ragtime.prompters.eval_prompters import EvalPrompterFR, Eval
-from ragtime.prompters.question_prompters import QuestionPrompterFR, Question, QA
+from ragtime.prompters.fact_prompters import FactPrompterFR
+from ragtime.prompters.eval_prompters import EvalPrompterFR
+from ragtime.prompters.question_prompters import QuestionPrompterFR
 
 prompterTable: dict = {
     "AnsPrompterBase": AnsPrompterBase,

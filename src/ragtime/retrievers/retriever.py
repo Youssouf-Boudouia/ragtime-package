@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 from abc import abstractmethod
 from ragtime.base import RagtimeBase
 from ragtime.expe import QA

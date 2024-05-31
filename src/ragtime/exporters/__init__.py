@@ -1,6 +1,4 @@
-#!/usr/bin/env python3
-
-from ragtime.base.exporter import Exporter
+from ragtime.exporters.exporter import Exporter
 
 from ragtime.exporters.json import Json
 from ragtime.exporters.html import Html

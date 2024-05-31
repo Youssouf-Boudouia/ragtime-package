@@ -1,11 +1,14 @@
 from ragtime.generators import TextGenerator
 from ragtime.retrievers.retriever import Retriever
-from ragtime.llms import LLM
 from ragtime.expe import QA, Answer, Answers, StartFrom
 from ragtime.config import logger
-from typing import Optional
+from ragtime.llms import LLM
+from typing import Optional, List
+
 
 class AnsGenerator(TextGenerator):
+    llms: List[LLM]
+    retriever: Optional[Retriever] = None
     """
     Object to write answers in the expe
     To use a Retriever, first implement one and give it as parameter when constructing the object
@@ -13,8 +16,6 @@ class AnsGenerator(TextGenerator):
     - post_process : to add "meta" fields based on the llm_answer
     Prompts can be changed in the LLM subclass
     """
-
-    retriever: Optional[Retriever] = None
 
     def __init__(self, llms: list[LLM] = None, retriever: Retriever = None):
         """
@@ -90,7 +91,9 @@ class AnsGenerator(TextGenerator):
                 )
             ]
             if prev_ans:
-                prev_ans = prev_ans[0]  # prev_ans is None if no previous Answer has been generated for the current LLM
+                prev_ans = prev_ans[
+                    0
+                ]  # prev_ans is None if no previous Answer has been generated for the current LLM
                 logger.debug(f"An Answer has already been generated with this LLM")
             else:
                 prev_ans = None

@@ -1,2 +1,2 @@
-from ragtime.retrievers.retriever import *
-from ragtime.retrievers.indexer import *
+from ragtime.retrievers.retriever import Retriever
+from ragtime.retrievers.indexer import Indexer
