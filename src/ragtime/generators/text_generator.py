@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 from abc import abstractmethod, ABC
 
 from ragtime.base import RagtimeBase
@@ -22,7 +20,7 @@ class TextGenerator(RagtimeBase, ABC):
     llms: Optional[list[LLM]] = []
     b_use_chunks: bool = False
 
-    def __init__(self, llms: list = None, prompter:Prompter = None):
+    def __init__(self, llms: list = None, prompter: Prompter = None):
         """
         Args
             llms(LLM or list[LLM]) : list of LLM objects
@@ -37,11 +35,15 @@ class TextGenerator(RagtimeBase, ABC):
                 if prompter:
                     self.llms.append(LiteLLM(name=llm, prompter=prompter))
                 else:
-                    raise RagtimeException('You must provide a Prompter to create LLMs from their names only')
+                    raise RagtimeException(
+                        "You must provide a Prompter to create LLMs from their names only"
+                    )
             elif isinstance(llm, LLM):
                 self.llms.append(llm)
             else:
-                raise RagtimeException(f'Objects in the llms list must be either str or LLM - {llm} is not')
+                raise RagtimeException(
+                    f"Objects in the llms list must be either str or LLM - {llm} is not"
+                )
 
     @property
     def llm(self) -> LLM:
