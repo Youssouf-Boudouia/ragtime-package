@@ -1,11 +1,11 @@
 from ragtime.exporters.exporter import Exporter, Expe, Path
 
+from ragtime.base import RagtimeException
 
 from ragtime.config import (
     DEFAULT_HEADER_SIZE,
     DEFAULT_SPREADSHEET_TEMPLATE,
     DEFAULT_WORKSHEET,
-    RagtimeException,
 )
 
 from ragtime.expe import QA

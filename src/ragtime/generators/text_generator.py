@@ -8,15 +8,28 @@ from ragtime.base import RagtimeException
 from ragtime.config import logger
 from ragtime.expe import Expe
 
-from typing import Optional
+from typing import Optional, List
 import asyncio
 
 from ragtime.exporters import Json
+from ragtime.pipeline.validator import (
+    LLMValidator,
+    PrompterValidator,
+    ExporterListValidator,
+)
 
 
 class TextGenerator(RagtimeBase, ABC):
-    llms: Optional[list[LLM]] = []
+    llms: List[LLMValidator]
+    prompter: PrompterValidator
+    export_to: ExporterListValidator = []
+
     b_use_chunks: bool = False
+    save_every: Optional[int] = 0
+    start_from: Optional[StartFrom] = StartFrom.beginning
+    b_missing_only: Optional[bool] = False
+    output_folder: str = None
+
     """
     Abstract class for QuestionGenerator, AnswerGenerator, FactGenerator, EvalGenerator
     """
@@ -30,48 +43,7 @@ class TextGenerator(RagtimeBase, ABC):
         b_add_suffix=True,
     )
 
-    def __init__(self, llms: list = None, prompter: Prompter = None):
-        """
-        Args
-            llms(LLM or list[LLM]) : list of LLM objects
-        """
-        super().__init__()
-        if not llms:
-            raise RagtimeException("llms list is empty! Please provide at least one.")
-        if isinstance(llms, str):
-            llms = [llms]
-        for llm in llms:
-            if isinstance(llm, str):
-                if prompter:
-                    self.llms.append(LiteLLM(name=llm, prompter=prompter))
-                else:
-                    raise RagtimeException(
-                        "You must provide a Prompter to create LLMs from their names only"
-                    )
-            elif isinstance(llm, LLM):
-                self.llms.append(llm)
-            else:
-                raise RagtimeException(
-                    f"Objects in the llms list must be either str or LLM - {llm} is not"
-                )
-
-    @property
-    def llm(self) -> LLM:
-        """
-        Helper function to get the first LLM when only one is provided (like for EvalGenerator and FactGenerator)
-        """
-        if not self.llms:
-            return None
-        return self.llms[0]
-
-    def generate(
-        self,
-        expe: Expe,
-        save_every: int = 0,
-        b_missing_only: bool = False,
-        only_llms: list[str] = None,
-        start_from: StartFrom = StartFrom.beginning,
-    ):
+    def generate(self, expe: Expe):
         """
         Main method calling "gen_for_qa" for each QA in an Expe. Returns False if completed with error, True otherwise
         The main step in generation are :
@@ -102,12 +74,7 @@ class TextGenerator(RagtimeBase, ABC):
                 f'*** {self.__class__.__name__} for question \n"{qa.question.text}"'
             )
             try:
-                await self.gen_for_qa(
-                    qa=qa,
-                    start_from=start_from,
-                    b_missing_only=b_missing_only,
-                    only_llms=only_llms,
-                )
+                await self.gen_for_qa(qa=qa)
             except Exception as e:
                 logger.exception(
                     f"Exception caught - saving what has been done so far:\n{e}"
@@ -116,7 +83,7 @@ class TextGenerator(RagtimeBase, ABC):
                 self.__save_temp.save(expe, file_name=f"Stopped_at_{num_q}_of_{nb_q}_")
                 return
             logger.info(f'End question "{qa.question.text}"')
-            if save_every and (num_q % save_every == 0):
+            if self.save_every and (num_q % self.save_every == 0):
                 self.__save.save(expe)
 
         loop = asyncio.get_event_loop()
@@ -132,13 +99,7 @@ class TextGenerator(RagtimeBase, ABC):
         raise NotImplementedError("Must implement this if you want to use it!")
 
     @abstractmethod
-    async def gen_for_qa(
-        self,
-        qa: QA,
-        start_from: StartFrom = StartFrom.beginning,
-        b_missing_only: bool = True,
-        only_llms: list[str] = None,
-    ):
+    async def gen_for_qa(self, qa: QA):
         """
         Method to be implemented to generate Answer, Fact and Eval
         """

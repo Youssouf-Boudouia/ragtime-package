@@ -1,19 +1,19 @@
 from ragtime.expe import StartFrom, QA, Answer, Facts
 from ragtime.generators import TextGenerator
 from ragtime.config import logger
+from ragtime.config import FOLDER_FACTS
+from ragtime.llms import LLM
+
 
 class FactGenerator(TextGenerator):
+    llm: LLM
+    output_folder: str = FOLDER_FACTS
+
     """
     Generate Facts from existing Answers
     """
 
-    async def gen_for_qa(
-        self,
-        qa: QA,
-        start_from: StartFrom = StartFrom.beginning,
-        b_missing_only: bool = False,
-        only_llms: list[str] = None,
-    ):
+    async def gen_for_qa(self, qa: QA):
         """
         Create Facts based on the first Answer in the QA having human Eval equals 1
         """
@@ -43,7 +43,7 @@ class FactGenerator(TextGenerator):
             cur_obj=Facts(),
             prev_obj=prev_facts,
             qa=qa,
-            start_from=start_from,
-            b_missing_only=b_missing_only,
+            start_from=self.start_from,
+            b_missing_only=self.b_missing_only,
             answer=ans,
         )

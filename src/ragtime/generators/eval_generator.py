@@ -3,9 +3,13 @@ from ragtime.llms import LLM
 from ragtime.expe import StartFrom, QA, Eval, Facts
 from ragtime.base import RagtimeException
 from ragtime.config import logger, UNKOWN_LLM
+from ragtime.config import FOLDER_EVALS
 
 
 class EvalGenerator(TextGenerator):
+    llm: LLM
+    output_folder: str = FOLDER_EVALS
+
     """
     Generate Eval from Answers and Facts.
     For a given QA, send the Answer and the Facts to the LLM to get the prompt back
@@ -14,13 +18,7 @@ class EvalGenerator(TextGenerator):
     The conversion between the LLM answer and the Eval is made in post_process
     """
 
-    async def gen_for_qa(
-        self,
-        qa: QA,
-        start_from: StartFrom = StartFrom.beginning,
-        b_missing_only: bool = False,
-        only_llms: list[str] = None,
-    ):
+    async def gen_for_qa(self, qa: QA):
         """
         Create Eval for each QA where Facts are available
         """
@@ -36,8 +34,6 @@ class EvalGenerator(TextGenerator):
         logger.prefix += f"[EvalGen][{self.llm.name}]"
         for ans in (a for a in qa.answers if a.text):
             llm_name: str = ans.llm_answer.name if ans.llm_answer else UNKOWN_LLM
-            if only_llms and llm_name not in only_llms and llm_name != UNKOWN_LLM:
-                continue
             logger.debug(f'Generate Eval for answer generated with "{llm_name}"')
             prev_eval: Eval = ans.eval
 
@@ -46,8 +42,8 @@ class EvalGenerator(TextGenerator):
                 cur_obj=Eval(),
                 prev_obj=prev_eval,
                 qa=qa,
-                start_from=start_from,
-                b_missing_only=b_missing_only,
+                start_from=self.start_from,
+                b_missing_only=self.b_missing_only,
                 answer=ans,
                 facts=qa.facts,
             )
@@ -63,21 +59,7 @@ class TwoFactsEvalGenerator(TextGenerator):
     perform evaluation
     """
 
-    def __init__(self, llms: list[LLM] = None):
-        super().__init__(llms=llms)
-        if len(self.llms) < 2:
-            raise RagtimeException(
-                """Need at least 2 LLMs to run this generator!
-                                   1st LLM is used to generate Facts from the Answer.
-                                   2nd LLM is used to generate Eval from the golden Facts and the Facts from the Answer."""
-            )
-
-    async def gen_for_qa(
-        self,
-        qa: QA,
-        start_from: StartFrom = StartFrom.beginning,
-        b_missing_only: bool = False,
-    ):
+    async def gen_for_qa(self, qa: QA):
         """
         Create Eval for each QA where Facts are available
         """
@@ -102,8 +84,8 @@ class TwoFactsEvalGenerator(TextGenerator):
                 cur_obj=Facts(),
                 prev_obj=None,
                 qa=qa,
-                start_from=start_from,
-                b_missing_only=b_missing_only,
+                start_from=self.start_from,
+                b_missing_only=self.b_missing_only,
                 answer=ans,
             )
 
@@ -117,8 +99,8 @@ class TwoFactsEvalGenerator(TextGenerator):
                 cur_obj=cur_eval,
                 prev_obj=prev_eval,
                 qa=qa,
-                start_from=start_from,
-                b_missing_only=b_missing_only,
+                start_from=self.start_from,
+                b_missing_only=self.b_missing_only,
                 answer_facts=ans_facts,
                 gold_facts=qa.facts,
             )

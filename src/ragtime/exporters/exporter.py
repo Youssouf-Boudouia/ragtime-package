@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from abc import abstractmethod
 
 from ragtime.expe import Expe
-from ragtime.config import RagtimeException
+from ragtime.base import RagtimeException
 
 from pathlib import Path
 from datetime import datetime

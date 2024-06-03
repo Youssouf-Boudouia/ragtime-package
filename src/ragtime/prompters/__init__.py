@@ -1,3 +1,4 @@
+from ragtime.prompters.prompter import Prompter, Prompt
 from ragtime.prompters.answer_prompters import (
     AnsPrompterBase,
     AnsPrompterWithRetrieverFR,
@@ -15,5 +16,5 @@ prompterTable: dict = {
 }
 
 
-def reference_Prompter(name, cls):
+def reference_Prompter(cls, name):
     prompterTable[name] = cls

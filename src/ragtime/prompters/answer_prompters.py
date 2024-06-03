@@ -8,12 +8,14 @@ import json
 from unidecode import unidecode
 from typing import Optional
 
+
 class AnsPrompterBase(Prompter):
     """
     This simple prompter just send the question as is to the LLM
     and does not perform any post-processing
     """
-    system:str = ""
+
+    system: str = ""
 
     def get_prompt(self, question: Question, chunks: Optional[Chunks] = None) -> Prompt:
         result: Prompt = Prompt()
@@ -27,6 +29,7 @@ class AnsPrompterBase(Prompter):
         """
         cur_obj.text = cur_obj.llm_answer.text
 
+
 class AnsPrompterWithRetrieverFR(Prompter):
     """
     This prompter uses a prompt asking the LLM to generate a JSON structure
@@ -37,7 +40,7 @@ class AnsPrompterWithRetrieverFR(Prompter):
     FLD_QUEST_OK: str = "q_ok"
     FLD_CHUNKS_OK: str = "chunks_ok"
     FLD_ANSWER: str = "answer"
-    system:str = f"""Tu es un expert qui doit répondre à des questions à l'aide de paragraphes qui te sont fournis.
+    system: str = f"""Tu es un expert qui doit répondre à des questions à l'aide de paragraphes qui te sont fournis.
         Tu dois utiliser uniquement ces paragraphes pour répondre aux questions.
         Tu dois inclure les titres exacts de ces paragraphes dans la réponse que tu renvoies.
         Tu dois justifier tes réponses et expliquer comment tu les as construites.

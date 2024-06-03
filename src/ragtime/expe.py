@@ -126,10 +126,8 @@ class QA(RagtimeBase):
                     ]
                     return result
                 else:  # dict (key not decimal)
-                    index = index.replace('"', "").replace(
-                        "'", ""
-                    )  # if it is a string (dict index), remove quotes
-
+                    index = index.replace('"', "").replace("'", "")
+                    # if it is a string (dict index), remove quotes
                 try:
                     result = getattr(result, a_wo_index)[index]
                 except:
@@ -141,7 +139,6 @@ class QA(RagtimeBase):
                     b_return_None = True
             if b_return_None:
                 return None
-
         return result
 
 

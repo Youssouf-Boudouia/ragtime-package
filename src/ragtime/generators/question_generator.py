@@ -8,8 +8,13 @@ from ragtime.retrievers.indexer import Indexer
 from ragtime.expe import QA, Question
 from llama_index.core import Document
 
+from ragtime.config import FOLDER_QUESTIONS
+
 
 class QuestionGenerator(TextGenerator):
+    llm: LLM
+    output_folder: str = FOLDER_QUESTIONS
+
     """
     Generate Questions from a set of documents.
     """
@@ -17,7 +22,7 @@ class QuestionGenerator(TextGenerator):
     docs_path: Path = None
     nb_quest: int = 10
     docs: list[Document] = []
-    expe: Expe = Expe()
+    expe: Expe = Expe()  # ??
     indexer: Any = None
 
     def __init__(self, nb_quest: int, docs_path: Path, llms: list[LLM] = None):
@@ -42,32 +47,7 @@ class QuestionGenerator(TextGenerator):
 
         self.docs = documents
 
-    # def generate(
-    #     self,
-    #     expe: Expe,
-    #     save_every: int = 0,
-    #     b_missing_only: bool = False,
-    #     only_llms: list[str] = None,
-    #     start_from: StartFrom = StartFrom.beginning,
-    # ):
-    #     for qa in self.expe.items:
-    #         expe.items.append(qa)
-
-    #     super().generate(
-    #         expe=expe,
-    #         save_every=save_every,
-    #         b_missing_only=b_missing_only,
-    #         only_llms=only_llms,
-    #         start_from=start_from,
-    #     )
-
-    async def gen_for_qa(
-        self,
-        qa: QA,
-        start_from: StartFrom = StartFrom.beginning,
-        b_missing_only: bool = False,
-        only_llms: list[str] = None,
-    ):
+    async def gen_for_qa(self, qa: QA):
 
         original_prefix: str = logger.prefix
         logger.prefix = f"{original_prefix}[QestGen][{self.llms[0].name}]"
@@ -77,8 +57,8 @@ class QuestionGenerator(TextGenerator):
             cur_obj=Question(),
             prev_obj=prev_question,
             qa=qa,
-            start_from=start_from,
-            b_missing_only=b_missing_only,
+            start_from=self.start_from,
+            b_missing_only=self.b_missing_only,
             chunk=qa.question.meta["chunk"],
         )
         qa.question.meta = prev_question.meta
