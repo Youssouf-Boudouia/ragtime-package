@@ -52,13 +52,15 @@ class LLMAnswer(RagtimeText):
     prompt: Optional[Prompt] = None
     name: Optional[str] = None
     full_name: Optional[str] = None
-    timestamp: datetime = Optional[datetime]  # timestamp indicating when the question has been sent to the LLM
+    # timestamp indicating when the question has been sent to the LLM
+    timestamp: datetime = Optional[datetime]
     duration: Optional[float] = None  # time to get the answer in seconds
     cost: Optional[float] = None
 
 
 class WithLLMAnswer(BaseModel):
     llm_answer: Optional[LLMAnswer] = None
+
 
 class Question(RagtimeText, WithLLMAnswer):
     pass
@@ -115,8 +117,10 @@ class QA(RagtimeBase):
     answers: Optional[Answers] = Answers()
 
     def get_attr(self, path: str) -> list[Any]:
-        """Returns the value within a QA object based on its path expressed as a string
-        Useful for spreadhseets export - returns None if path is not found"""
+        """
+        Returns the value within a QA object based on its path expressed as a string
+        Useful for spreadhseets export - returns None if path is not found
+        """
         result: Any = self
         b_return_None: bool = False
         for a in path.split("."):
@@ -133,8 +137,8 @@ class QA(RagtimeBase):
                     ]
                     return result
                 else:  # dict (key not decimal)
-                    index = index.replace('"', "").replace("'", "")  # if it is a string (dict index), remove quotes
-
+                    # if it is a string (dict index), remove quotes
+                    index = index.replace('"', "").replace("'", "")
                 try:
                     result = getattr(result, a_wo_index)[index]
                 except:
@@ -212,20 +216,28 @@ class Expe(RagtimeList[QA]):
             if self.json_path:
                 path = path / self.json_path.stem
             else:
-                raise RagtimeException('No JSON file attached to this Expe and you provided only a folder Path')
+                raise RagtimeException(
+                    "No JSON file attached to this Expe and you provided only a folder Path"
+                )
         if not path:
             if self.json_path:
                 path = Path(self.json_path.parent) / self.json_path.stem
             else:
-                raise RagtimeException(f"Cannot save to JSON since no json_path is stored in expe and not path has been provided in argument.")
+                raise RagtimeException(
+                    f"Cannot save to JSON since no json_path is stored in expe and not path has been provided in argument."
+                )
 
         # Make sure at least 1 QA is here
         if len(self) == 0:
-            raise Exception("The Expe object you're trying to write is empty! Please add at least one QA")
+            raise Exception(
+                "The Expe object you're trying to write is empty! Please add at least one QA"
+            )
 
         # Check and prepare the destination file path
         if not (path):
-            raise Exception("No file defined - please specify a file name to save the Expe into")
+            raise Exception(
+                "No file defined - please specify a file name to save the Expe into"
+            )
 
         # If the provided path is a string, convert it to a Path
         result_path = Path(path) if isinstance(path, str) else path
@@ -455,7 +467,8 @@ class Expe(RagtimeList[QA]):
         ws_conf: list[str] = [cell.value for cell in ws[header_size + 1]]
 
         # Write the values at specific rows - they are defined in second row, below the one describing the value to insert
-        for cell in ws[header_size + 2]:  # read the row just after the conf row - it contains configuration for specific rows
+        # read the row just after the conf row - it contains configuration for specific rows
+        for cell in ws[header_size + 2]:
             # if a value is present, analyse it - it should contain a "row" indication e.g. "answers[0].full_name, row=1"
             if cell.value:
                 if cell.value == "#":
@@ -485,7 +498,8 @@ class Expe(RagtimeList[QA]):
             for col, p in enumerate(ws_conf, start=1):
                 if p == "#":  # special token # used to indicate question number
                     val = [num_q]
-                elif p[0] == "=":  # if a formula is here, write it as is in the formula field
+                # if a formula is here, write it as is in the formula field
+                elif p[0] == "=":
                     continue
                 else:  # if it is a path to get a value in QA, get it
                     # Get value in the QA object

@@ -41,15 +41,16 @@ class RagtimeList(RagtimeBase, Generic[T]):
     def empty(self):
         self.items = []
 
+
 class RagtimeException(Exception):
     pass
 
 
-def format_exc(msg: str) -> str:
-    """Format the message for Exceptions - adds the call stack among other"""
-    inspect_stack = inspect.stack()
-    class_name: str = inspect_stack[1][0].f_locals["self"].__class__.__name__
-    return f"[{class_name}.{inspect.stack()[1][3]}()] {msg}"
+# def format_exc(msg: str) -> str:
+#     """Format the message for Exceptions - adds the call stack among other"""
+#     inspect_stack = inspect.stack()
+#     class_name: str = inspect_stack[1][0].f_locals["self"].__class__.__name__
+#     return f"[{class_name}.{inspect.stack()[1][3]}()] {msg}"
 
 
 def div0(num: float, denom: float) -> float:
